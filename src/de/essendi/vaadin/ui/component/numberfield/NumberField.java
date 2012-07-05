@@ -18,6 +18,7 @@ package de.essendi.vaadin.ui.component.numberfield;
 
 import static de.essendi.vaadin.ui.component.numberfield.widgetset.shared.Constants.*;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 
@@ -202,7 +203,7 @@ public class NumberField extends TextField {
 		target.addAttribute(ATTRIBUTE_MIN_VALUE, getMinValue());
 		target.addAttribute(ATTRIBUTE_MAX_VALUE, getMaxValue());
 
-		// Use {@link DecimalFormat} to format the user-input and send the
+		// Use DecimalFormat to format the user-input and send the
 		// formatted value back to client.
 		target.addAttribute(ATTRIBUTE_SERVER_FORMATTED_VALUE,
 				getValueAsFormattedDecimalNumber());
@@ -287,18 +288,50 @@ public class NumberField extends TextField {
 	}
 
 	/**
+	 * @param newValue
+	 *            Sets the value of the field to a double.
+	 */
+	public void setValue(Double newValue) throws ReadOnlyException,
+			ConversionException {
+		// Use BigDecimal to avoid scientific notation and thus allow
+		// NumberValidator to work properly
+		String noExponent = BigDecimal.valueOf(newValue).toPlainString();
+
+		String localizedValue = replacePointWithDecimalSeparator(noExponent);
+		super.setValue(localizedValue);
+	}
+
+	/**
 	 * Sets the value of the field, regardless whether the field is in read-only
 	 * mode.
 	 * 
 	 * @param newValue
-	 *            The field's new value.
+	 *            The field's new String value.
 	 */
 	public void setValueIgnoreReadOnly(String newValue) {
 		boolean wasReadOnly = isReadOnly();
 		if (isReadOnly()) {
 			setReadOnly(false);
 		}
-		this.setValue(newValue);
+		setValue(newValue);
+		if (wasReadOnly) {
+			setReadOnly(true);
+		}
+	}
+
+	/**
+	 * Sets the value of the field, regardless whether the field is in read-only
+	 * mode.
+	 * 
+	 * @param newValue
+	 *            The field's new Double value.
+	 */
+	public void setValueIgnoreReadOnly(Double newValue) {
+		boolean wasReadOnly = isReadOnly();
+		if (isReadOnly()) {
+			setReadOnly(false);
+		}
+		setValue(newValue);
 		if (wasReadOnly) {
 			setReadOnly(true);
 		}
@@ -560,3 +593,4 @@ public class NumberField extends TextField {
 	}
 
 }
+
